@@ -12,7 +12,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
       # Portainer deploys this file alone with secrets from the stack env;
       # an empty env file reproduces everything except those secrets.
       - run: docker compose -f docker-compose.yml --env-file /dev/null config --quiet
