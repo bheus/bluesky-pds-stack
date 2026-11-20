@@ -1,0 +1,45 @@
+name: bluesky-pds
+
+services:
+  pds:
+    image: ghcr.io/bluesky-social/pds:0.4.204
+    container_name: bluesky-pds
+    restart: unless-stopped
+    environment:
+      PDS_HOSTNAME: pds.builtbybrendan.com
+      PDS_DATA_DIRECTORY: /pds
+      PDS_BLOBSTORE_DISK_LOCATION: /pds/blocks
+      PDS_BLOB_UPLOAD_LIMIT: "52428800"
+      PDS_EMAIL_FROM_ADDRESS: noreply@builtbybrendan.com
+      PDS_DID_PLC_URL: https://plc.directory
+      PDS_BSKY_APP_VIEW_URL: https://api.bsky.app
+      PDS_BSKY_APP_VIEW_DID: did:web:api.bsky.app
+      PDS_REPORT_SERVICE_URL: https://mod.bsky.app
+      PDS_REPORT_SERVICE_DID: did:plc:ar7c4by46qjdydhdevvrndac
+      PDS_CRAWLERS: https://bsky.network
+      PDS_SERVICE_HANDLE_DOMAINS: .builtbybrendan.com,.pds.builtbybrendan.com
+      PDS_RATE_LIMITS_ENABLED: "true"
+      LOG_ENABLED: "true"
+      LOG_LEVEL: debug
+      # Secrets come from the Portainer stack environment, never this file.
+      PDS_JWT_SECRET: ${PDS_JWT_SECRET}
+      PDS_ADMIN_PASSWORD: ${PDS_ADMIN_PASSWORD}
+      PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX: ${PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX}
+      PDS_EMAIL_SMTP_URL: ${PDS_EMAIL_SMTP_URL}
+    volumes:
+      - pds-data:/pds
+    ports:
+      - "2583:3000"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/xrpc/_health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  # Holds the account's signing keys and repo: losing it loses the Bluesky
+  # identity. External so a stack rename or `down -v` can't create or remove it.
+  pds-data:
+    name: bluesky-pds_pds-data
+    external: true
